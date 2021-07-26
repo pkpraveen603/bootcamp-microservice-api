@@ -1,7 +1,7 @@
 package Models
 import (
 	"fmt"
-	"github.com/gin-day3-implementation/Config"
+	"github.com/bootcamp-microservice-api/Config"
 	_ "github.com/go-sql-driver/mysql"
 )
 
