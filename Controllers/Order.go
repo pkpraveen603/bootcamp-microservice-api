@@ -1,9 +1,12 @@
 package Controllers
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/bootcamp-microservice-api/Config"
 	"github.com/bootcamp-microservice-api/Models"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // GetAllOrders ... Get all students
@@ -22,6 +25,23 @@ func CreateOrder(c *gin.Context) {
 	var order Models.Order
 	c.BindJSON(&order)
 	err := Models.CreateOrder(&order)
+	var BuyQuantity = order.Quantity
+	var product Models.Product
+	err_:=Models.GetProductByID(&product,strconv.FormatUint(uint64(order.Pid), 10))
+	if err_ != nil {
+		fmt.Println("Error error",http.StatusNotFound)
+	}
+	if product.Quantity < BuyQuantity{
+		order.Status = "Failed"
+		p,_ := json.Marshal(product)
+		fmt.Println(string(p),order.Pid)
+	} else{
+		order.Status = "Order Placed"
+		product.Quantity = product.Quantity-BuyQuantity
+		Config.DB.Save(product)
+	}
+
+	//Models.Get
 	if err != nil {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusNotFound)

@@ -18,6 +18,10 @@ func CreateOrder(order *Order) (err error) {
 	if err = Config.DB.Create(order).Error; err != nil {
 		return err
 	}
+
+
+
+
 	return nil
 }
 
