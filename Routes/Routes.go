@@ -25,7 +25,7 @@ func SetupRouter() *gin.Engine {
 	grp3 := r.Group("/order-api")
 	{
 		grp3.GET("order", Controllers.GetAllOrders)
-		grp3.POST("order", Controllers.CreateOrder)
+		grp3.POST("order", Controllers.ConcurrentOrder)
 		grp3.GET("order/:id", Controllers.GetOrderForCustomerID)
 		grp3.PUT("order/:id", Controllers.UpdateOrder)
 		//grp2.DELETE("order/:id", Controllers.DeleteProduct)

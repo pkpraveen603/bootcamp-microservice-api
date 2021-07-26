@@ -1,4 +1,5 @@
 package Controllers
+
 import (
 	"encoding/json"
 	"fmt"
@@ -7,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"sync"
+	"time"
 )
 
 // GetAllOrders ... Get all students
@@ -20,34 +23,54 @@ func GetAllOrders(c *gin.Context) {
 	}
 }
 
+func ConcurrentOrder(c *gin.Context){
+	go CreateOrder(c)
+}
+
 // CreateOrder ... Create student
 func CreateOrder(c *gin.Context) {
 	var order Models.Order
 	c.BindJSON(&order)
 	err := Models.CreateOrder(&order)
+	if err!=nil{
+		fmt.Println("error.")
+	}
 	var BuyQuantity = order.Quantity
 	var product Models.Product
+	var customer Models.User
 	err_:=Models.GetProductByID(&product,strconv.FormatUint(uint64(order.Pid), 10))
 	if err_ != nil {
 		fmt.Println("Error error",http.StatusNotFound)
 	}
-	if product.Quantity < BuyQuantity{
+	error_:=Models.GetUserByID(&customer,strconv.FormatUint(uint64(order.Cid), 10))
+	if error_ != nil {
+		fmt.Println("Error error",http.StatusNotFound)
+	}
+
+	var mutex = &sync.Mutex{}
+	mutex.Lock()
+	if product.Quantity < BuyQuantity && customer.Active==false{
 		order.Status = "Failed"
 		p,_ := json.Marshal(product)
 		fmt.Println(string(p),order.Pid)
 	} else{
 		order.Status = "Order Placed"
-		product.Quantity = product.Quantity-BuyQuantity
-		Config.DB.Save(product)
+		NewQuantity := product.Quantity-BuyQuantity
+		//Config.DB.Save(product)
+		Config.DB.Model(&product).Where("pid = ?", product.Pid).Update("quantity", NewQuantity)
 	}
-
-	//Models.Get
-	if err != nil {
-		fmt.Println(err.Error())
-		c.AbortWithStatus(http.StatusNotFound)
-	} else {
-		c.JSON(http.StatusOK, order)
-	}
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	c.AbortWithStatus(http.StatusNotFound)
+	//} else {
+	//	c.JSON(http.StatusOK,gin.H{
+	//		"message":"order placed successfully",
+	//	})
+	//}
+	mutex.Unlock()
+	Config.DB.Model(&customer).Where("cid = ?", customer.Cid).Update("active", false)
+	time.Sleep(100*time.Second)
+	Config.DB.Model(&customer).Where("cid = ?", customer.Cid).Update("active", true)
 }
 
 // GetOrderForCustomerID ... Get student by id

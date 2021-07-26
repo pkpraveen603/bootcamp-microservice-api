@@ -20,7 +20,7 @@ func CreateUser(user *User) (err error) {
 }
 //GetUserByID ... Fetch only one user by Id
 func GetUserByID(user *User, id string) (err error) {
-	if err = Config.DB.Where("id = ?", id).First(user).Error; err != nil {
+	if err = Config.DB.Where("cid = ?", id).First(user).Error; err != nil {
 		return err
 	}
 	return nil
@@ -33,6 +33,6 @@ func UpdateUser(user *User, id string) (err error) {
 }
 //DeleteUser ... Delete user
 func DeleteUser(user *User, id string) (err error) {
-	Config.DB.Where("id = ?", id).Delete(user)
+	Config.DB.Where("cid = ?", id).Delete(user)
 	return nil
 }

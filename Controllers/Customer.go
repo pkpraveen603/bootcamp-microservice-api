@@ -19,6 +19,7 @@ func GetUsers(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	var user Models.User
 	c.BindJSON(&user)
+	user.Active=true
 	err := Models.CreateUser(&user)
 	if err != nil {
 		fmt.Println(err.Error())
