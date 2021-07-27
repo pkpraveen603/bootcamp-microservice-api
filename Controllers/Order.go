@@ -31,19 +31,22 @@ func newTrue() *bool {
 // ConcurrentOrder ... go routine to update order concurrently
 func ConcurrentOrder(c *gin.Context){
 	cc := c.Copy()
-	GetError := false
-	go CreateOrder(cc, &GetError)
-	if GetError==true{
-		c.AbortWithStatus(http.StatusNotFound)
-	} else{
-		c.JSON(http.StatusOK,gin.H{
-			"message":"order status updated on server",
-		})
+	//GetError := false
+	//userReturned := Models.User{}
+	ChannelError := make(chan bool,100)
+	ChannelOrder := make(chan Models.Order,100)
+	go CreateOrder(cc, ChannelError, ChannelOrder)
+	ans := <-ChannelError
+	order := <-ChannelOrder
+	if ans {
+			c.AbortWithStatus(http.StatusNotFound)
+	} else {
+			c.JSON(http.StatusOK, order)
 	}
 }
 
 // CreateOrder ... Create order
-func CreateOrder(c *gin.Context, GetError *bool) {
+func CreateOrder(c *gin.Context, ChannelError chan bool, ChannelOrder chan Models.Order) {
 	var order Models.Order
 	c.BindJSON(&order)
 	some,_ := json.Marshal(&order)
@@ -67,7 +70,8 @@ func CreateOrder(c *gin.Context, GetError *bool) {
 		fmt.Println("Fail")
 		err := Models.CreateOrder(&order)
 		if err != nil {
-			GetError = newTrue()
+			ChannelError<-true
+			ChannelOrder<-order
 		}
 		mutex.Unlock()
 		return
@@ -79,11 +83,14 @@ func CreateOrder(c *gin.Context, GetError *bool) {
 	}
 	err := Models.CreateOrder(&order)
 	if err != nil {
-		GetError = newTrue()
+		ChannelError<-true
+		ChannelOrder<-order
 	}
 	mutex.Unlock()
 
 	Config.DB.Model(&customer).Where("cid = ?", customer.Cid).Update("active", false)
+	ChannelError<-false
+	ChannelOrder<-order
 	time.Sleep(200*time.Second)
 	Config.DB.Model(&customer).Where("cid = ?", customer.Cid).Update("active", true)
 }

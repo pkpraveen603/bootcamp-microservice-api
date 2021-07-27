@@ -12,7 +12,7 @@ func SetupRouter() *gin.Engine {
 		grp1.GET("user", Controllers.GetUsers)
 		grp1.POST("user", Controllers.CreateUser)
 		grp1.GET("user/:id", Controllers.GetUserByID)
-		grp1.PUT("user/:id", Controllers.UpdateUser)
+		grp1.PATCH("user/:id", Controllers.UpdateUser)
 		grp1.DELETE("user/:id", Controllers.DeleteUser)
 	}
 	grp2 := r.Group("/retailer-api")
@@ -20,8 +20,8 @@ func SetupRouter() *gin.Engine {
 		grp2.GET("product", Controllers.GetProducts)
 		grp2.POST("product", Controllers.CreateProduct)
 		grp2.GET("product/:id", Controllers.GetProductByID)
-		grp2.PATCH("product/:id", Controllers.UpdateProduct)
-		grp2.DELETE("product/:id", Controllers.DeleteProduct)
+		grp2.PATCH("product/:id", Controllers.ConcurrentUpdate)
+		grp2.DELETE("product/:id", Controllers.ConcurrentDelete)
 		grp2.PATCH("order/:id", Controllers.UpdateOrder)
 	}
 	grp3 := r.Group("/order-api")
