@@ -23,18 +23,31 @@ func GetAllOrders(c *gin.Context) {
 	}
 }
 
-func ConcurrentOrder(c *gin.Context){
-	go CreateOrder(c)
+func newTrue() *bool {
+	b := true
+	return &b
 }
 
-// CreateOrder ... Create student
-func CreateOrder(c *gin.Context) {
+// ConcurrentOrder ... go routine to update order concurrently
+func ConcurrentOrder(c *gin.Context){
+	cc := c.Copy()
+	GetError := false
+	go CreateOrder(cc, &GetError)
+	if GetError==true{
+		c.AbortWithStatus(http.StatusNotFound)
+	} else{
+		c.JSON(http.StatusOK,gin.H{
+			"message":"order status updated on server",
+		})
+	}
+}
+
+// CreateOrder ... Create order
+func CreateOrder(c *gin.Context, GetError *bool) {
 	var order Models.Order
 	c.BindJSON(&order)
-	err := Models.CreateOrder(&order)
-	if err!=nil{
-		fmt.Println("error.")
-	}
+	some,_ := json.Marshal(&order)
+	fmt.Println(string(some))
 	var BuyQuantity = order.Quantity
 	var product Models.Product
 	var customer Models.User
@@ -49,27 +62,29 @@ func CreateOrder(c *gin.Context) {
 
 	var mutex = &sync.Mutex{}
 	mutex.Lock()
-	if product.Quantity < BuyQuantity && customer.Active==false{
+	if product.Quantity < BuyQuantity || customer.Active==false{
 		order.Status = "Failed"
-		p,_ := json.Marshal(product)
-		fmt.Println(string(p),order.Pid)
+		fmt.Println("Fail")
+		err := Models.CreateOrder(&order)
+		if err != nil {
+			GetError = newTrue()
+		}
+		mutex.Unlock()
+		return
 	} else{
 		order.Status = "Order Placed"
 		NewQuantity := product.Quantity-BuyQuantity
 		//Config.DB.Save(product)
 		Config.DB.Model(&product).Where("pid = ?", product.Pid).Update("quantity", NewQuantity)
 	}
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	c.AbortWithStatus(http.StatusNotFound)
-	//} else {
-	//	c.JSON(http.StatusOK,gin.H{
-	//		"message":"order placed successfully",
-	//	})
-	//}
+	err := Models.CreateOrder(&order)
+	if err != nil {
+		GetError = newTrue()
+	}
 	mutex.Unlock()
+
 	Config.DB.Model(&customer).Where("cid = ?", customer.Cid).Update("active", false)
-	time.Sleep(100*time.Second)
+	time.Sleep(200*time.Second)
 	Config.DB.Model(&customer).Where("cid = ?", customer.Cid).Update("active", true)
 }
 
@@ -105,14 +120,4 @@ func UpdateOrder(c *gin.Context) {
 	}
 }
 
-// DeleteProduct ... Delete the student record
-//func DeleteProduct(c *gin.Context) {
-//	var product Models.Product
-//	id := c.Params.ByName("id")
-//	err := Models.DeleteUser(&product, id)
-//	if err != nil {
-//		c.AbortWithStatus(http.StatusNotFound)
-//	} else {
-//		c.JSON(http.StatusOK, gin.H{"id" + id: "is deleted"})
-//	}
-//}
+

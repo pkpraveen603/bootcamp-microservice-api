@@ -7,5 +7,5 @@ type Order struct {
 	Quantity  int    `json:"quantity"`
 }
 func (o *Order) TableName() string {
-	return "order"
+	return "orders"
 }
