@@ -32,6 +32,7 @@ func GetProductByID(product *Product, id string) (err error) {
 // UpdateProduct ... Update user
 func UpdateProduct(product *Product, id string) (err error) {
 	fmt.Println(product)
+	//Config.DB.Model(&product).Where("pid = ?", product.Pid).Update("quantity", NewQuantity)
 	Config.DB.Save(product)
 	return nil
 }

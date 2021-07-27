@@ -90,7 +90,8 @@ func CreateOrder(c *gin.Context, GetError *bool) {
 
 // GetOrderForCustomerID ... Get student by id
 func GetOrderForCustomerID(c *gin.Context) {
-	id := c.Params.ByName("cid")
+	id := c.Params.ByName("id")
+	fmt.Println(id)
 	var order Models.Order
 	err := Models.GetOrderForCustomerID(&order, id)
 	if err != nil {

@@ -27,7 +27,7 @@ func CreateOrder(order *Order) (err error) {
 
 // GetOrderForCustomerID ... Fetch only one user by Id
 func GetOrderForCustomerID(order *Order, id string) (err error) {
-	if err = Config.DB.Where("cid = ?", id).Error; err != nil {
+	if err = Config.DB.Where("cid = ?", id).Find(&order).Error; err != nil {
 		return err
 	}
 	return nil

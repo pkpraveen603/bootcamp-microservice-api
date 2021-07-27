@@ -27,7 +27,13 @@ func CreateProduct(c *gin.Context) {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, product)
+		c.JSON(http.StatusOK, gin.H{
+			"id":product.Pid,
+			"product_name":product.ProductName,
+			"price":product.PricePerProduct,
+			"quantity":product.Quantity,
+			"message":"Product added successfully",
+		})
 	}
 }
 
