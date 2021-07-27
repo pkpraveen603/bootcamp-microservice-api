@@ -1,6 +1,6 @@
 package Models
 type Order struct {
-	Oid       uint   `json:"oid" gorm:"primaryKey;autoIncrement"`
+	Oid       uint   `json:"oid" gorm:"PRIMARY_KEY;AUTO_INCREMENT"`
 	Cid       uint   `json:"cid"`
 	Pid       uint   `json:"pid"`
 	Status    string `json:"status"`

@@ -1,6 +1,6 @@
 package Models
 type User struct {
-	Cid      uint   `json:"cid" gorm:"primaryKey;autoIncrement""`
+	Cid      uint64   `json:"cid" gorm:"primaryKey;autoIncrement:true"`
 	Name     string `json:"name"`
 	Active   bool    `json:"active"`
 }
